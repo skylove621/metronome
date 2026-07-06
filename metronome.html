@@ -16,7 +16,7 @@
             align-items: center;
         }
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             width: 100%;
             background: white;
             padding: 25px;
@@ -179,8 +179,8 @@
 <script>
     // 預設兩段範例資料
     let sectionsData = [
-        { startBar: 1, endBar: 4, beatsPerBar: 4, bpm: 120, rhythm: "2" }, 
-    ];
+        { startBar: 1, endBar: 4, beatsPerBar: 4, bpm: 120, rhythm: "2" }
+	];
 
     // 預備拍控制變數
     let readyBarsSetting = 2; // 由 UI 控制
@@ -358,16 +358,16 @@
     }
 
     // 渲染帶有高亮顏色的節拍字串
+// 渲染帶有高亮顏色的節拍字串（已修正反附點視覺邏輯）
     function updateVisualTracker(bar, beat, subBeat, inReadyStage, readyCounter) {
         let currentSetting = inReadyStage ? sectionsData[0] : getSettingForBar(bar);
         const totalBeats = currentSetting.beatsPerBar;
-        const rType = inReadyStage ? "1" : currentSetting.rhythm; // 預備拍固定用1/4格式顯示
+        const rType = inReadyStage ? "1" : currentSetting.rhythm;
         
         let htmlOutput = "";
         let globalElementIndex = 0;
         let targetIndex = 0;
         
-        // 判斷高亮 CSS 類別（預備拍用橘色，正式用綠色）
         const highlightClass = inReadyStage ? "highlight-ready" : "highlight";
         
         for (let b = 0; b < totalBeats; b++) {
@@ -378,14 +378,21 @@
             if (rType === "2") segments = [beatNum.toString(), "."];
             if (rType === "3") segments = [beatNum.toString(), ".", "."];
             if (rType === "4") segments = [beatNum.toString(), ".", ".", "."];
-            if (rType === "dotted")     segments = [beatNum.toString(), "-", "-", "."];
-            if (rType === "rev_dotted") segments = [beatNum.toString(), ".", "-", "-"];
+            if (rType === "dotted")     segments = [beatNum.toString(), "_", "_", "."]; // 正附點 1--.
+            if (rType === "rev_dotted") segments = [beatNum.toString(), ".", "_", "_"]; // 反附點 1.--
             
+            // 【核心修正點】精準定位正附點與反附點的亮點位置
             if (b === beat) {
-                if (rType === "1") targetIndex = globalElementIndex;
-                else if (rType === "2" || rType === "3" || rType === "4") targetIndex = globalElementIndex + subBeat;
-                else if (rType === "dotted" || rType === "rev_dotted") {
+                if (rType === "1") {
+                    targetIndex = globalElementIndex;
+                } else if (rType === "2" || rType === "3" || rType === "4") {
+                    targetIndex = globalElementIndex + subBeat;
+                } else if (rType === "dotted") {
+                    // 正附點 (長短)：第一個音在第1個字元(subBeat=0)，第二個音在第4個字元(subBeat=1)
                     targetIndex = globalElementIndex + (subBeat === 0 ? 0 : 3);
+                } else if (rType === "rev_dotted") {
+                    // 反附點 (短長)：第一個音在第1個字元(subBeat=0)，第二個音在第2個字元(subBeat=1)
+                    targetIndex = globalElementIndex + (subBeat === 0 ? 0 : 1);
                 }
             }
             
@@ -405,9 +412,7 @@
         
         currentBeatTracker.innerHTML = htmlOutput;
 
-        // 更新左邊小節顯示文字
         if (inReadyStage) {
-            // 計算目前是倒數第幾小節
             let remainingBars = readyBarsSetting - readyCounter + 1;
             currentBarDisplay.textContent = `Ready (${remainingBars})`;
         } else {
@@ -422,9 +427,9 @@
         if (subBeat === 0) {
             if (beat === 0) {
                 // 每小節第一拍：預備拍給低一點的木魚聲(800Hz)，正式拍給清脆聲(1000Hz)
-                playTone(time, inReadyStage ? 850 : 1000, 0.15); 
+                playTone(time, inReadyStage ? 1500 : 1800, 0.15); 
             } else {
-                playTone(time, inReadyStage ? 550 : 600, 0.1); 
+                playTone(time, inReadyStage ? 750 : 900, 0.1); 
             }
         } else {
             playTone(time, 440, 0.05); 
