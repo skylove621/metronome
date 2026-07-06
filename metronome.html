@@ -157,8 +157,8 @@
             <div class="form-group">
                 <label>預備長度</label>
                 <select id="ready-bars-select">
-                    <option value="1">倒數 1 小節</option>
-                    <option value="2" selected>倒數 2 小節</option>
+                    <option value="1" selected>倒數 1 小節</option>
+                    <option value="2">倒數 2 小節</option>
                 </select>
             </div>
             <div class="form-group">
@@ -183,7 +183,7 @@
 	];
 
     // 預備拍控制變數
-    let readyBarsSetting = 2; // 由 UI 控制
+    let readyBarsSetting = 1; // 由 UI 控制
     let isReadyStage = false; // 是否處於預備拍階段
     let readyBarCounter = 0;  // 預備拍內部的小節計數器 (例如：-2, -1)
 
