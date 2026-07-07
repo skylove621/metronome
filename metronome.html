@@ -484,12 +484,12 @@
     function scheduleNote(bar, beat, subBeat, time, inReadyStage, readyCounter) {
         if (subBeat === 0) {
             if (beat === 0) {
-                playTone(time, inReadyStage ? 1200 : 1500, 0.15); 
+                playTone(time, inReadyStage ? 3000 : 3500, 0.15); 
             } else {
-                playTone(time, inReadyStage ? 750 : 900, 0.1);    
+                playTone(time, inReadyStage ? 3000 : 3500, 0.1);    
             }
         } else {
-            playTone(time, 440, 0.05); 
+            playTone(time, 2000, 0.05); 
         }
 
         const delay = (time - audioCtx.currentTime) * 1000;
