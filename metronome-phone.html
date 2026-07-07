@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>多段式視覺節拍器</title>
+    <title>高階多段式視覺節拍器</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -124,7 +124,7 @@
         }
         .section-title { font-weight: bold; color: #34495e; margin-bottom: 8px; display: flex; justify-content: space-between;}
         
-		.form-grid {
+        .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr); /* 📱 預設手機直立：2 欄 */
             gap: 12px 10px; /* 上下間距 12px，左右間距 10px */
@@ -137,12 +137,11 @@
             /* 讓第 1 個欄位(起始)和第 2 個欄位(結束)自動均分第一行(各佔1欄) */
             .form-grid > .form-group:nth-child(1),
             .form-grid > .form-group:nth-child(2),
-			.form-grid > .form-group:nth-child(3),
+            .form-grid > .form-group:nth-child(3),
             .form-grid > .form-group:nth-child(4) {
                 grid-column: span 1;
             }
-            /* 讓後續的欄位(每小節幾拍、拍速、細分節拍)在直立時獨佔一行(跨 2 欄滿版) */
-            
+            /* 讓後續的欄位(細分節拍)在直立時獨佔一行(跨 2 欄滿版) */
             .form-grid > .form-group:nth-child(5) {
                 grid-column: span 2;
             }
@@ -205,7 +204,6 @@
 <div class="container">
     <h1>多段式視覺節拍器</h1>
 
-    <!-- 即時狀態顯示面版 -->
     <div class="display-panel">
         <div class="display-box">
             <div class="display-label">目前小節 (Bar)</div>
@@ -217,14 +215,12 @@
         </div>
     </div>
 
-    <!-- 播放主控制項 -->
     <div class="controls">
         <button id="start-stop-btn" class="btn btn-primary">開始播放</button>
     </div>
 
     <hr>
 
-    <!-- 預備拍設定 -->
     <h3>預備倒數設定</h3>
     <div class="section-item ready-section">
         <div class="section-title" style="color: #d35400;">
@@ -245,16 +241,14 @@
         </div>
     </div>
 
-    <!-- 節拍設定段落 -->
     <h3>正式節拍段落編排</h3>
     <div id="section-container" class="section-list">
-        <!-- 動態生成的段落會放在這裡 -->
-    </div>
+        </div>
     <button id="add-section-btn" class="btn btn-secondary" style="width: 100%;">+ 新增段落</button>
 </div>
 
 <script>
-    // 預設兩段範例資料
+    // 預設一段範例資料
     let sectionsData = [
         { startBar: 1, endBar: 4, beatsPerBar: 4, bpm: 120, rhythm: "2" }
     ];
@@ -313,6 +307,7 @@
                     <div class="form-group">
                         <label>每小節幾拍</label>
                         <select onchange="updateData(${index}, 'beatsPerBar', this.value)">
+                            <option value="1" ${sec.beatsPerBar==1?'selected':''}>1 拍</option>
                             <option value="2" ${sec.beatsPerBar==2?'selected':''}>2 拍</option>
                             <option value="3" ${sec.beatsPerBar==3?'selected':''}>3 拍</option>
                             <option value="4" ${sec.beatsPerBar==4?'selected':''}>4 拍</option>
@@ -323,7 +318,7 @@
                         <label>拍速 (BPM)</label>
                         <input type="number" value="${sec.bpm}" min="30" max="300" onchange="updateData(${index}, 'bpm', this.value)">
                     </div>
-                    <div class="form-group" style="grid-column: span 2; max-width: 100%;">
+                    <div class="form-group">
                         <label>細分節拍</label>
                         <select onchange="updateData(${index}, 'rhythm', this.value)">
                             <option value="1" ${sec.rhythm=='1'?'selected':''}>1/4 音符 (1 2 3 4)</option>
@@ -336,23 +331,26 @@
                     </div>
                 </div>
             `;
-            // 修正手機上最後一個選擇框的跨欄顯示
-            // if (window.innerWidth < 768) {
-            //     div.querySelector('.form-grid').lastElementChild.style.gridColumn = "span 2";
-            // }
             sectionContainer.appendChild(div);
         });
     }
 
+    // 【修改核心】：新增時完全複製前一個段落的數值
     function addSection() {
         const lastSec = sectionsData[sectionsData.length - 1];
+        
+        // 計算前一個段落的小節長度
+        const lastBarLength = lastSec ? (lastSec.endBar - lastSec.startBar + 1) : 4;
+        // 新段落的起始點為前一個段落的 結束點 + 1
         const nextStart = lastSec ? parseInt(lastSec.endBar) + 1 : 1;
+        const nextEnd = nextStart + lastBarLength - 1;
+
         sectionsData.push({
             startBar: nextStart,
-            endBar: nextStart + 3,
-            beatsPerBar: 4,
-            bpm: 120,
-            rhythm: "1"
+            endBar: nextEnd,
+            beatsPerBar: lastSec ? lastSec.beatsPerBar : 4, // 複製幾拍
+            bpm: lastSec ? lastSec.bpm : 120,               // 複製速度
+            rhythm: lastSec ? lastSec.rhythm : "1"          // 複製細分節拍
         });
         renderSections();
     }
@@ -486,9 +484,9 @@
     function scheduleNote(bar, beat, subBeat, time, inReadyStage, readyCounter) {
         if (subBeat === 0) {
             if (beat === 0) {
-                playTone(time, inReadyStage ? 1200 : 1500, 0.15); // 調高後的第一拍高音
+                playTone(time, inReadyStage ? 1200 : 1500, 0.15); 
             } else {
-                playTone(time, inReadyStage ? 750 : 900, 0.1);    // 調高後的其他正拍
+                playTone(time, inReadyStage ? 750 : 900, 0.1);    
             }
         } else {
             playTone(time, 440, 0.05); 
