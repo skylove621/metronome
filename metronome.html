@@ -2,81 +2,104 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多段式視覺節拍器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>高階多段式視覺節拍器</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f5f7fa;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            box-sizing: border-box;
         }
         .container {
-            max-width: 1000px;
+            max-width: 800px;
             width: 100%;
             background: white;
-            padding: 25px;
+            padding: 15px;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
-        h1 { text-align: center; color: #2c3e50; margin-top: 0; }
+        h1 { text-align: center; color: #2c3e50; margin-top: 5px; font-size: 1.5rem; }
+        h3 { font-size: 1.1rem; color: #2c3e50; margin-top: 15px; margin-bottom: 10px; }
         
-        /* 顯示面板 */
+        /* 顯示面板 - 支援 RWD */
         .display-panel {
             background: #2c3e50;
             color: #fff;
             border-radius: 8px;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 15px;
+            grid-template-columns: 1fr; /* 手機直立預設 1 欄 */
+            gap: 10px;
+        }
+        @media (min-width: 576px) {
+            .display-panel {
+                grid-template-columns: 1fr 2fr; /* 平板與電腦、手機橫放變 2 欄 */
+            }
         }
         .display-box {
             background: rgba(255,255,255,0.1);
-            padding: 15px;
+            padding: 12px;
             border-radius: 6px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            min-height: 70px;
         }
-        .display-label { font-size: 0.9rem; color: #bdc3c7; margin-bottom: 5px; }
-        .display-value { font-size: 1.8rem; font-weight: bold; font-family: monospace; letter-spacing: 2px; }
+        .display-label { font-size: 0.8rem; color: #bdc3c7; margin-bottom: 3px; }
+        .display-value { font-size: 1.5rem; font-weight: bold; font-family: monospace; letter-spacing: 1px; }
         .display-value.active { color: #2ecc71; }
         .display-value.ready-active { color: #f39c12; }
 
-        /* 節拍軌跡視覺化樣式 */
+        /* 節拍軌跡視覺化 - 使用 vw 動態縮放防止手機破版 */
         .beat-tracker {
             font-family: "Courier New", Courier, monospace;
-            font-size: 2.5rem;
-            color: #576574; /* 未啟動時的暗色 */
-            letter-spacing: 4px;
-            word-break: break-all;
+            font-size: 7vw; /* 依手機寬度自動縮放 */
+            color: #576574;
+            letter-spacing: 2px;
+            white-space: nowrap; /* 強制不換行 */
+            overflow-x: auto;   /* 萬一寬度不夠可滑動，不擠壓版面 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        @media (min-width: 768px) {
+            .beat-tracker {
+                font-size: 2.5rem; /* 大螢幕固定大小 */
+            }
         }
         .beat-tracker .highlight {
-            color: #2ecc71; /* 正式段落：亮綠色 */
+            color: #2ecc71;
             text-shadow: 0 0 10px rgba(46, 204, 113, 0.6);
         }
         .beat-tracker .highlight-ready {
-            color: #f39c12; /* 預備拍段落：亮橘色 */
+            color: #f39c12;
             text-shadow: 0 0 10px rgba(243, 156, 18, 0.6);
         }
 
         /* 控制按鈕 */
-        .controls { text-align: center; margin-bottom: 25px; }
+        .controls { text-align: center; margin-bottom: 15px; }
         .btn {
-            padding: 12px 30px;
+            padding: 12px 40px;
             font-size: 1.1rem;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             transition: background 0.2s;
+            width: 100%; /* 手機上按鈕滿版更好點 */
+            box-sizing: border-box;
+        }
+        @media (min-width: 576px) {
+            .btn { width: auto; } /* 電腦平板還原原本大小 */
         }
         .btn-primary { background: #2ecc71; color: white; }
         .btn-primary:hover { background: #27ae60; }
@@ -85,12 +108,12 @@
         .btn-secondary { background: #34495e; color: white; margin-top: 10px; }
         .btn-secondary:hover { background: #2c3e50; }
         
-        /* 段落設定區 */
-        .section-list { margin-bottom: 20px; }
+        /* 段落設定區 - 響應式欄位 */
+        .section-list { margin-bottom: 15px; }
         .section-item {
             background: #f8f9fa;
             border: 1px solid #e2e8f0;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             margin-bottom: 12px;
             position: relative;
@@ -99,28 +122,81 @@
             border-left: 5px solid #f39c12;
             background: #fffbf2;
         }
-        .section-title { font-weight: bold; color: #34495e; margin-bottom: 10px; display: flex; justify-content: space-between;}
+        .section-title { font-weight: bold; color: #34495e; margin-bottom: 8px; display: flex; justify-content: space-between;}
+        
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(2, 1fr); /* 📱 預設手機直立：2 欄 */
+            gap: 12px 10px; /* 上下間距 12px，左右間距 10px */
+            width: 100%;
+            box-sizing: border-box;
         }
+
+        /* 📱 手機直立時的特殊排版控制 */
+        @media (max-width: 479px) {
+            /* 讓第 1 個欄位(起始)和第 2 個欄位(結束)自動均分第一行(各佔1欄) */
+            .form-grid > .form-group:nth-child(1),
+            .form-grid > .form-group:nth-child(2),
+            .form-grid > .form-group:nth-child(3),
+            .form-grid > .form-group:nth-child(4) {
+                grid-column: span 1;
+            }
+            /* 讓後續的欄位(細分節拍)在直立時獨佔一行(跨 2 欄滿版) */
+            .form-grid > .form-group:nth-child(5) {
+                grid-column: span 2;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(5, 1fr); /* 💻 電腦或平板：恢復平整的 5 欄並排 */
+            }
+            /* 寬螢幕時清除跨欄設定 */
+            .form-grid > .form-group {
+                grid-column: auto !important;
+            }
+        }
+
         .form-grid.ready-grid {
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 1fr;
         }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-size: 0.85rem; color: #7f8c8d; margin-bottom: 4px; }
+        @media (min-width: 576px) {
+            .form-grid.ready-grid {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .form-group label { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 4px; }
         .form-group input, .form-group select {
-            padding: 8px;
+            padding: 10px 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 0.95rem;
+            background: white;
+            width: 100%; 
+            box-sizing: border-box; 
+            -webkit-appearance: none;
+            appearance: none;
         }
-        .form-group input:disabled, .form-group select:disabled {
+        /* 針對 select 加回原生箭頭 */
+        select {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23333' d='M0 0l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 24px !important;
+        }
+        .form-group input:disabled {
             background: #e2e8f0;
             color: #7f8c8d;
         }
-        .remove-btn { color: #e74c3c; cursor: pointer; border: none; background: none; font-size: 0.9rem; }
+        .remove-btn { color: #e74c3c; cursor: pointer; border: none; background: none; font-size: 0.9rem; padding: 5px; }
+        hr { border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -128,7 +204,6 @@
 <div class="container">
     <h1>多段式視覺節拍器</h1>
 
-    <!-- 即時狀態顯示面版 -->
     <div class="display-panel">
         <div class="display-box">
             <div class="display-label">目前小節 (Bar)</div>
@@ -140,14 +215,12 @@
         </div>
     </div>
 
-    <!-- 播放主控制項 -->
     <div class="controls">
         <button id="start-stop-btn" class="btn btn-primary">開始播放</button>
     </div>
 
     <hr>
 
-    <!-- 預備拍設定（固定不滅） -->
     <h3>預備倒數設定</h3>
     <div class="section-item ready-section">
         <div class="section-title" style="color: #d35400;">
@@ -162,32 +235,28 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>提示</label>
-                <input type="text" value="自動同步段落 #1 的拍數與速度，預備拍固定以 1/4 音符提示" disabled>
+                <label>提示說明</label>
+                <input type="text" value="自動同步段落 #1，固定以 1/4 音符提示" disabled>
             </div>
         </div>
     </div>
 
-    <!-- 節拍設定段落 -->
     <h3>正式節拍段落編排</h3>
     <div id="section-container" class="section-list">
-        <!-- 動態生成的段落會放在這裡 -->
-    </div>
-    <button id="add-section-btn" class="btn btn-secondary">+ 新增段落</button>
+        </div>
+    <button id="add-section-btn" class="btn btn-secondary" style="width: 100%;">+ 新增段落</button>
 </div>
 
 <script>
-    // 預設兩段範例資料
+    // 預設一段範例資料
     let sectionsData = [
         { startBar: 1, endBar: 4, beatsPerBar: 4, bpm: 120, rhythm: "2" }
-	];
+    ];
 
-    // 預備拍控制變數
-    let readyBarsSetting = 1; // 由 UI 控制
-    let isReadyStage = false; // 是否處於預備拍階段
-    let readyBarCounter = 0;  // 預備拍內部的小節計數器 (例如：-2, -1)
+    let readyBarsSetting = 2; 
+    let isReadyStage = false; 
+    let readyBarCounter = 0;  
 
-    // Web Audio 相關變數
     let audioCtx = null;
     let isPlaying = false;
     let currentBar = 1;
@@ -196,11 +265,9 @@
     let nextNoteTime = 0.0; 
     let timerId = null;
 
-    // 排程設定
     const lookahead = 25.0; 
     const scheduleAheadTime = 0.1; 
 
-    // DOM 元素
     const sectionContainer = document.getElementById('section-container');
     const addSectionBtn = document.getElementById('add-section-btn');
     const startStopBtn = document.getElementById('start-stop-btn');
@@ -240,6 +307,7 @@
                     <div class="form-group">
                         <label>每小節幾拍</label>
                         <select onchange="updateData(${index}, 'beatsPerBar', this.value)">
+                            <option value="1" ${sec.beatsPerBar==1?'selected':''}>1 拍</option>
                             <option value="2" ${sec.beatsPerBar==2?'selected':''}>2 拍</option>
                             <option value="3" ${sec.beatsPerBar==3?'selected':''}>3 拍</option>
                             <option value="4" ${sec.beatsPerBar==4?'selected':''}>4 拍</option>
@@ -267,15 +335,22 @@
         });
     }
 
+    // 【修改核心】：新增時完全複製前一個段落的數值
     function addSection() {
         const lastSec = sectionsData[sectionsData.length - 1];
+        
+        // 計算前一個段落的小節長度
+        const lastBarLength = lastSec ? (lastSec.endBar - lastSec.startBar + 1) : 4;
+        // 新段落的起始點為前一個段落的 結束點 + 1
         const nextStart = lastSec ? parseInt(lastSec.endBar) + 1 : 1;
+        const nextEnd = nextStart + lastBarLength - 1;
+
         sectionsData.push({
             startBar: nextStart,
-            endBar: nextStart + 3,
-            beatsPerBar: 4,
-            bpm: 120,
-            rhythm: "1"
+            endBar: nextEnd,
+            beatsPerBar: lastSec ? lastSec.beatsPerBar : 4, // 複製幾拍
+            bpm: lastSec ? lastSec.bpm : 120,               // 複製速度
+            rhythm: lastSec ? lastSec.rhythm : "1"          // 複製細分節拍
         });
         renderSections();
     }
@@ -295,9 +370,7 @@
     }
 
     function getRhythmDetails(rhythmStr) {
-        if (isReadyStage) {
-            return { count: 1, weights: [1.0] }; // 預備拍一律只打 1/4 音符正拍
-        }
+        if (isReadyStage) return { count: 1, weights: [1.0] }; 
         switch(rhythmStr) {
             case "1":          return { count: 1, weights: [1.0] };
             case "2":          return { count: 2, weights: [0.5, 0.5] };
@@ -321,9 +394,7 @@
         osc.stop(time + duration);
     }
 
-    // 計算下一個發聲點與進程控制
     function nextNote() {
-        // 預備拍參照段落 #1 的速度與拍號
         let currentSetting = isReadyStage ? sectionsData[0] : getSettingForBar(currentBar);
         const details = getRhythmDetails(currentSetting.rhythm);
         const secondsPerBeat = 60.0 / currentSetting.bpm;
@@ -338,11 +409,9 @@
             
             if (currentBeat >= currentSetting.beatsPerBar) {
                 currentBeat = 0;
-                
                 if (isReadyStage) {
                     readyBarCounter++;
                     if (readyBarCounter > readyBarsSetting) {
-                        // 預備拍結束，正式進入段落 #1
                         isReadyStage = false;
                         currentBar = sectionsData[0].startBar;
                     }
@@ -350,24 +419,21 @@
                     currentBar++;
                     const maxBar = Math.max(...sectionsData.map(s => s.endBar));
                     if (currentBar > maxBar) {
-                        currentBar = sectionsData[0].startBar; // 循環
+                        currentBar = sectionsData[0].startBar; 
                     }
                 }
             }
         }
     }
 
-    // 渲染帶有高亮顏色的節拍字串
-// 渲染帶有高亮顏色的節拍字串（已修正反附點視覺邏輯）
     function updateVisualTracker(bar, beat, subBeat, inReadyStage, readyCounter) {
         let currentSetting = inReadyStage ? sectionsData[0] : getSettingForBar(bar);
         const totalBeats = currentSetting.beatsPerBar;
-        const rType = inReadyStage ? "1" : currentSetting.rhythm;
+        const rType = inReadyStage ? "1" : currentSetting.rhythm; 
         
         let htmlOutput = "";
         let globalElementIndex = 0;
         let targetIndex = 0;
-        
         const highlightClass = inReadyStage ? "highlight-ready" : "highlight";
         
         for (let b = 0; b < totalBeats; b++) {
@@ -378,20 +444,17 @@
             if (rType === "2") segments = [beatNum.toString(), "."];
             if (rType === "3") segments = [beatNum.toString(), ".", "."];
             if (rType === "4") segments = [beatNum.toString(), ".", ".", "."];
-            if (rType === "dotted")     segments = [beatNum.toString(), "_", "_", "."]; // 正附點 1--.
-            if (rType === "rev_dotted") segments = [beatNum.toString(), ".", "_", "_"]; // 反附點 1.--
+            if (rType === "dotted")     segments = [beatNum.toString(), "-", "-", "."];
+            if (rType === "rev_dotted") segments = [beatNum.toString(), ".", "-", "-"];
             
-            // 【核心修正點】精準定位正附點與反附點的亮點位置
             if (b === beat) {
                 if (rType === "1") {
                     targetIndex = globalElementIndex;
                 } else if (rType === "2" || rType === "3" || rType === "4") {
                     targetIndex = globalElementIndex + subBeat;
                 } else if (rType === "dotted") {
-                    // 正附點 (長短)：第一個音在第1個字元(subBeat=0)，第二個音在第4個字元(subBeat=1)
                     targetIndex = globalElementIndex + (subBeat === 0 ? 0 : 3);
                 } else if (rType === "rev_dotted") {
-                    // 反附點 (短長)：第一個音在第1個字元(subBeat=0)，第二個音在第2個字元(subBeat=1)
                     targetIndex = globalElementIndex + (subBeat === 0 ? 0 : 1);
                 }
             }
@@ -405,9 +468,7 @@
                 globalElementIndex++;
             });
             
-            if (b < totalBeats - 1) {
-                htmlOutput += " ";
-            }
+            if (b < totalBeats - 1) htmlOutput += " ";
         }
         
         currentBeatTracker.innerHTML = htmlOutput;
@@ -421,26 +482,19 @@
     }
 
     function scheduleNote(bar, beat, subBeat, time, inReadyStage, readyCounter) {
-        let currentSetting = inReadyStage ? sectionsData[0] : getSettingForBar(bar);
-        
-        // 聲音排程
         if (subBeat === 0) {
             if (beat === 0) {
-                // 每小節第一拍：預備拍給低一點的木魚聲(800Hz)，正式拍給清脆聲(1000Hz)
-                playTone(time, inReadyStage ? 1500 : 1800, 0.15); 
+                playTone(time, inReadyStage ? 1200 : 1500, 0.15); 
             } else {
-                playTone(time, inReadyStage ? 750 : 900, 0.1); 
+                playTone(time, inReadyStage ? 750 : 900, 0.1);    
             }
         } else {
             playTone(time, 440, 0.05); 
         }
 
-        // 精準視覺同步
         const delay = (time - audioCtx.currentTime) * 1000;
         setTimeout(() => {
             if (!isPlaying) return;
-            
-            // 呼叫高亮視覺渲染器
             updateVisualTracker(bar, beat, subBeat, inReadyStage, readyCounter);
             
             if(beat === 0 && subBeat === 0) {
@@ -453,7 +507,6 @@
 
     function scheduler() {
         while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
-            // 傳入當前的階段狀態快照，確保非同步 UI 渲染正確
             scheduleNote(currentBar, currentBeat, currentSubBeat, nextNoteTime, isReadyStage, readyBarCounter);
             nextNote();
         }
@@ -467,12 +520,10 @@
         isPlaying = !isPlaying;
 
         if (isPlaying) {
-            // 啟動預備拍階段
             isReadyStage = true;
             readyBarCounter = 1; 
             currentBeat = 0;
             currentSubBeat = 0;
-            
             nextNoteTime = audioCtx.currentTime + 0.05;
             startStopBtn.textContent = "停止";
             startStopBtn.className = "btn btn-danger";
