@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>雙視覺互動節拍器</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-sizing: border-box;
+        }
+        h1 { text-align: center; color: #2c3e50; margin: 5px 0 0 0; font-size: 1.4rem; }
+
+        /* 頂部整合顯示面板 */
+        .master-display {
+            background: #2c3e50;
+            color: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        @media (min-width: 576px) {
+            .master-display {
+                grid-template-columns: 1fr 3fr;
+                align-items: center;
+            }
+        }
+        .info-box {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 65px;
+        }
+        .info-label { font-size: 0.8rem; color: #bdc3c7; margin-bottom: 2px; width: 250px;}
+        .info-value { font-size: 1.4rem; font-weight: bold; font-family: monospace; }
+        .info-value.active-pulse { color: #2ecc71; }
+
+        /* 節拍軌跡視覺化 */
+        .tracker-output {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 8vw;
+            color: #7f8c8d;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        @media (min-width: 768px) {
+            .tracker-output { font-size: 2.5rem; }
+        }
+        .tracker-output .highlight {
+            color: #2ecc71;
+            text-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+        }
+
+        /* 節拍器設置區域佈局 (RWD 核心) */
+        .metronome-workspace {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 600px) and (orientation: landscape) {
+            .metronome-workspace {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* 獨立節拍器卡片樣式 - 預設灰色 */
+        .metro-card {
+            background: #e2e8f0;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .metro-card.active {
+            background: #d4edda;
+            border-color: #2ecc71;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+        }
+        .metro-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            padding-bottom: 6px;
+        }
+        .metro-card.active .metro-header { color: #155724; }
+
+        /* 💡 核心優化：將三個控制項精準合併為單一行網格 */
+        .control-row {
+            display: grid;
+            grid-template-columns: 2fr 2fr 3fr; /* 依序給予 幾拍、BPM、細分節拍 合適的寬度比例 */
+            gap: 8px;
+            width: 100%;
+        }
+
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 0.75rem; color: #64748b; margin-bottom: 4px; font-weight: 500; }
+        .metro-card.active .form-group label { color: #155724; }
+        
+        .form-group input, .form-group select {
+            padding: 10px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+            width: 100%;
+            box-sizing: border-box;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        select {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23333' d='M0 0l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 6px center;
+            padding-right: 18px !important;
+        }
+
+        /* 動作按鈕 */
+        .action-btn {
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            color: white;
+            background: #64748b;
+        }
+        .metro-card.active .action-btn { background: #e74c3c; }
+        .action-btn.btn-start { background: #2ecc71; }
+        .action-btn.btn-start:hover { background: #27ae60; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>雙視覺互動節拍器</h1>
+
+    <!-- 上方：顯示區 -->
+    <div class="master-display" id="main-display-panel">
+        <div class="info-box">
+            <div class="info-label">當前小節 / 拍數</div>
+            <div class="info-value" id="lbl-bar">STANDBY</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">節拍骨架軌跡 (Beat Tracker)</div>
+            <div class="tracker-output" id="lbl-tracker">------</div>
+        </div>
+    </div>
+
+    <!-- 設置區 -->
+    <div class="metronome-workspace">
+        
+        <!-- 節拍器 A -->
+        <div class="metro-card" id="card-A">
+            <div class="metro-header">
+                <span>節拍器 ── 軌道 A</span>
+                <span id="status-tag-A" style="font-size:0.8rem; opacity:0.8;">靜止</span>
+            </div>
+            <div class="control-row">
+                <div class="form-group">
+                    <label>幾拍</label>
+                    <select id="beats-A">
+                        <option value="1">1 拍</option>
+                        <option value="2">2 拍</option>
+                        <option value="3">3 拍</option>
+                        <option value="4" selected>4 拍</option>
+                        <option value="6">6 拍</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>拍速(BPM)</label>
+                    <input type="number" id="bpm-A" value="100" min="30" max="300">
+                </div>
+                <div class="form-group">
+                    <label>細分節拍</label>
+                    <select id="rhythm-A">
+                        <option value="1">1/4 音符</option>
+                        <option value="2" selected>1/8 音符</option>
+                        <option value="3">三連音</option>
+                        <option value="4">1/16 音符</option>
+                        <option value="dotted">正附點</option>
+                        <option value="rev_dotted">反附點</option>
+                    </select>
+                </div>
+            </div>
+            <button class="action-btn btn-start" id="btn-A" onclick="handleMetroClick('A')">啟動此軌道</button>
+        </div>
+
+        <!-- 節拍器 B -->
+        <div class="metro-card" id="card-B">
+            <div class="metro-header">
+                <span>節拍器 ── 軌道 B</span>
+                <span id="status-tag-B" style="font-size:0.8rem; opacity:0.8;">靜止</span>
+            </div>
+            <div class="control-row">
+                <div class="form-group">
+                    <label>幾拍</label>
+                    <select id="beats-B">
+                        <option value="1">1 拍</option>
+                        <option value="2">2 拍</option>
+                        <option value="3">3 拍</option>
+                        <option value="4" selected>4 拍</option>
+                        <option value="6">6 拍</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>拍速(BPM)</label>
+                    <input type="number" id="bpm-B" value="130" min="30" max="300">
+                </div>
+                <div class="form-group">
+                    <label>細分節拍</label>
+                    <select id="rhythm-B">
+                        <option value="1">1/4 音符</option>
+                        <option value="2">1/8 音符</option>
+                        <option value="3" selected>三連音</option>
+                        <option value="4">1/16 音符</option>
+                        <option value="dotted">正附點</option>
+                        <option value="rev_dotted">反附點</option>
+                    </select>
+                </div>
+            </div>
+            <button class="action-btn btn-start" id="btn-B" onclick="handleMetroClick('B')">啟動此軌道</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let currentActiveTrack = null; 
+    let audioCtx = null;
+    let isPlaying = false;
+    
+    let currentBar = 1;
+    let currentBeat = 0;
+    let currentSubBeat = 0;
+    let nextNoteTime = 0.0;
+    let timerId = null;
+
+    const lookahead = 25.0;
+    const scheduleAheadTime = 0.1;
+
+    const displayPanel = document.getElementById('main-display-panel');
+    const lblBar = document.getElementById('lbl-bar');
+    const lblTracker = document.getElementById('lbl-tracker');
+
+    function handleMetroClick(clickedTrack) {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (currentActiveTrack === clickedTrack) {
+            stopAllMechanisms();
+            return;
+        }
+        stopAllMechanisms();
+        startTrack(clickedTrack);
+    }
+
+    function startTrack(track) {
+        currentActiveTrack = track;
+        isPlaying = true;
+
+        // 小節永遠由 1 開始無限循環
+        currentBar = 1;
+        currentBeat = 0;
+        currentSubBeat = 0;
+        nextNoteTime = audioCtx.currentTime + 0.05;
+
+        document.getElementById(`card-${track}`).classList.add('active');
+        document.getElementById(`status-tag-${track}`).textContent = "播放中";
+        
+        const btn = document.getElementById(`btn-${track}`);
+        btn.textContent = "停止";
+        btn.className = "action-btn"; 
+        
+        displayPanel.style.backgroundColor = "#1e3a1e"; 
+
+        scheduler();
+    }
+
+    function stopAllMechanisms() {
+        isPlaying = false;
+        clearTimeout(timerId);
+        
+        document.getElementById('card-A').classList.remove('active');
+        document.getElementById('status-tag-A').textContent = "靜止";
+        document.getElementById('btn-A').textContent = "啟動此軌道";
+        document.getElementById('btn-A').className = "action-btn btn-start";
+
+        document.getElementById('card-B').classList.remove('active');
+        document.getElementById('status-tag-B').textContent = "靜止";
+        document.getElementById('btn-B').textContent = "啟動此軌道";
+        document.getElementById('btn-B').className = "action-btn btn-start";
+
+        displayPanel.style.backgroundColor = "#2c3e50";
+        lblBar.textContent = "STANDBY";
+        lblTracker.innerHTML = "------";
+        
+        currentActiveTrack = null;
+    }
+
+    function getTrackSettings(track) {
+        return {
+            beatsPerBar: parseInt(document.getElementById(`beats-${track}`).value),
+            bpm: parseInt(document.getElementById(`bpm-${track}`).value) || 120,
+            rhythm: document.getElementById(`rhythm-${track}`).value
+        };
+    }
+
+    function getRhythmDetails(rhythmStr) {
+        switch(rhythmStr) {
+            case "1":          return { count: 1, weights: [1.0] };
+            case "2":          return { count: 2, weights: [0.5, 0.5] };
+            case "3":          return { count: 3, weights: [1/3, 1/3, 1/3] };
+            case "4":          return { count: 4, weights: [0.25, 0.25, 0.25, 0.25] };
+            case "dotted":     return { count: 2, weights: [0.75, 0.25] };
+            case "rev_dotted": return { count: 2, weights: [0.25, 0.75] };
+            default:           return { count: 1, weights: [1.0] };
+        }
+    }
+
+    function playTone(time, frequency, duration) {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(frequency, time);
+        gainNode.gain.setValueAtTime(0.8, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function nextNote() {
+        if (!currentActiveTrack) return;
+        const currentSetting = getTrackSettings(currentActiveTrack);
+        const details = getRhythmDetails(currentSetting.rhythm);
+        const secondsPerBeat = 60.0 / currentSetting.bpm;
+
+        const currentWeight = details.weights[currentSubBeat];
+        nextNoteTime += secondsPerBeat * currentWeight;
+
+        currentSubBeat++;
+        if (currentSubBeat >= details.count) {
+            currentSubBeat = 0;
+            currentBeat++;
+            
+            if (currentBeat >= currentSetting.beatsPerBar) {
+                currentBeat = 0;
+                currentBar++; // 無限小節向上推進
+            }
+        }
+    }
+
+    function updateVisualTracker(bar, beat, subBeat, track) {
+        const currentSetting = getTrackSettings(track);
+        const totalBeats = currentSetting.beatsPerBar;
+        const rType = currentSetting.rhythm;
+        
+        let htmlOutput = "";
+        let globalElementIndex = 0;
+        let targetIndex = 0;
+        
+        for (let b = 0; b < totalBeats; b++) {
+            const beatNum = b + 1;
+            let segments = [];
+            
+            if (rType === "1") segments = [beatNum.toString()];
+            if (rType === "2") segments = [beatNum.toString(), "."];
+            if (rType === "3") segments = [beatNum.toString(), ".", "."];
+            if (rType === "4") segments = [beatNum.toString(), ".", ".", "."];
+            if (rType === "dotted")     segments = [beatNum.toString(), "-", "-", "."];
+            if (rType === "rev_dotted") segments = [beatNum.toString(), ".", "-", "-"];
+            
+            if (b === beat) {
+                if (rType === "1") {
+                    targetIndex = globalElementIndex;
+                } else if (rType === "2" || rType === "3" || rType === "4") {
+                    targetIndex = globalElementIndex + subBeat;
+                } else if (rType === "dotted") {
+                    targetIndex = globalElementIndex + (subBeat === 0 ? 0 : 3);
+                } else if (rType === "rev_dotted") {
+                    targetIndex = globalElementIndex + (subBeat === 0 ? 0 : 1);
+                }
+            }
+            
+            segments.forEach(char => {
+                if (globalElementIndex === targetIndex && b === beat) {
+                    htmlOutput += `<span class="highlight">${char}</span>`;
+                } else {
+                    htmlOutput += `<span>${char}</span>`;
+                }
+                globalElementIndex++;
+            });
+            
+            if (b < totalBeats - 1) htmlOutput += " ";
+        }
+        
+        lblTracker.innerHTML = htmlOutput;
+        lblBar.textContent = `第 ${bar} 小節 : 第 ${beat + 1} 拍`;
+    }
+
+    function scheduleNote(bar, beat, subBeat, time, track) {
+        if (subBeat === 0) {
+            if (beat === 0) playTone(time, 3500, 0.15); 
+            else playTone(time, 2500, 0.1);             
+        } else {
+            playTone(time, 1000, 0.05);                  
+        }
+
+        const delay = (time - audioCtx.currentTime) * 1000;
+        setTimeout(() => {
+            if (!isPlaying || currentActiveTrack !== track) return;
+            
+            updateVisualTracker(bar, beat, subBeat, track);
+            
+            if(beat === 0 && subBeat === 0) {
+                lblBar.className = "info-value active-pulse";
+                setTimeout(() => lblBar.className = "info-value", 100);
+            }
+        }, delay);
+    }
+
+    function scheduler() {
+        while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+            scheduleNote(currentBar, currentBeat, currentSubBeat, nextNoteTime, currentActiveTrack);
+            nextNote();
+        }
+        timerId = setTimeout(scheduler, lookahead);
+    }
+</script>
+
+</body>
+</html>
