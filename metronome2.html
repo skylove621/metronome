@@ -25,6 +25,36 @@
             gap: 12px;
             box-sizing: border-box;
         }
+		/* 💡 新增：左上角網頁切換按鈕樣式 */
+        .page-switch-btn {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            border-radius: 20px;
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .page-switch-btn:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #1e293b;
+        }
+        .page-switch-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
         h1 { text-align: center; color: #2c3e50; margin: 5px 0 0 0; font-size: 1.4rem; }
 
         /* 頂部整合顯示面板 */
@@ -170,6 +200,14 @@
 <body>
 
 <div class="container">
+	<!-- 💡 左上角切換圖案按鈕 -->
+    <a href="https://skylove621.github.io/metronome/metronome.html" class="page-switch-btn" title="切換至多段式視覺節拍器">
+        <svg viewBox="0 0 24 24">
+            <path d="M19 15v-3H9v-2h10V7l5 4-5 4M5 22c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h7v2H5v16h7v2H5z"/>
+        </svg>
+        <span>多段式視覺節拍器</span>
+    </a>
+	
     <h1>雙視覺節拍器</h1>
 
     <!-- 上方：顯示區 -->
