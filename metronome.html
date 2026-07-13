@@ -25,6 +25,36 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             box-sizing: border-box;
         }
+		/* 💡 新增：左上角網頁切換按鈕樣式 */
+        .page-switch-btn {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            border-radius: 20px;
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .page-switch-btn:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #1e293b;
+        }
+        .page-switch-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
         h1 { text-align: center; color: #2c3e50; margin-top: 5px; font-size: 1.5rem; }
         h3 { font-size: 1.1rem; color: #2c3e50; margin-top: 15px; margin-bottom: 10px; }
         
@@ -202,6 +232,14 @@
 <body>
 
 <div class="container">
+	<!-- 💡 左上角切換圖案按鈕 -->
+    <a href="https://skylove621.github.io/metronome/metronome2.html" class="page-switch-btn" title="切換至雙視覺節拍器">
+        <svg viewBox="0 0 24 24">
+            <path d="M19 15v-3H9v-2h10V7l5 4-5 4M5 22c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h7v2H5v16h7v2H5z"/>
+        </svg>
+        <span>雙視覺節拍器</span>
+    </a>
+	
     <h1>多段式視覺節拍器</h1>
 
     <div class="display-panel">
@@ -250,7 +288,9 @@
 <script>
     // 預設一段範例資料
     let sectionsData = [
-        { startBar: 1, endBar: 4, beatsPerBar: 4, bpm: 120, rhythm: "2" }
+        { startBar: 1, endBar: 1, beatsPerBar: 2, bpm: 100, rhythm: "2" },
+        { startBar: 2, endBar: 2, beatsPerBar: 2, bpm: 100, rhythm: "3" },
+        { startBar: 3, endBar: 4, beatsPerBar: 2, bpm: 100, rhythm: "1" }
     ];
 
     let readyBarsSetting = 2; 
@@ -349,7 +389,7 @@
             startBar: nextStart,
             endBar: nextEnd,
             beatsPerBar: lastSec ? lastSec.beatsPerBar : 4, // 複製幾拍
-            bpm: lastSec ? lastSec.bpm : 120,               // 複製速度
+            bpm: lastSec ? lastSec.bpm : 100,               // 複製速度
             rhythm: lastSec ? lastSec.rhythm : "1"          // 複製細分節拍
         });
         renderSections();
