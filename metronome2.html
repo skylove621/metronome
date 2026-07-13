@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>雙視覺互動節拍器</title>
+    <title>雙視覺節拍器</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -170,16 +170,16 @@
 <body>
 
 <div class="container">
-    <h1>雙視覺互動節拍器</h1>
+    <h1>雙視覺節拍器</h1>
 
     <!-- 上方：顯示區 -->
     <div class="master-display" id="main-display-panel">
         <div class="info-box">
             <div class="info-label">當前小節 / 拍數</div>
-            <div class="info-value" id="lbl-bar">STANDBY</div>
+            <div class="info-value" id="lbl-bar">準備</div>
         </div>
         <div class="info-box">
-            <div class="info-label">節拍骨架軌跡 (Beat Tracker)</div>
+            <div class="info-label">目前拍數軌跡 (Beat Tracker)</div>
             <div class="tracker-output" id="lbl-tracker">------</div>
         </div>
     </div>
@@ -190,7 +190,7 @@
         <!-- 節拍器 A -->
         <div class="metro-card" id="card-A">
             <div class="metro-header">
-                <span>節拍器 ── 軌道 A</span>
+                <span>節拍器 1</span>
                 <span id="status-tag-A" style="font-size:0.8rem; opacity:0.8;">靜止</span>
             </div>
             <div class="control-row">
@@ -220,13 +220,13 @@
                     </select>
                 </div>
             </div>
-            <button class="action-btn btn-start" id="btn-A" onclick="handleMetroClick('A')">啟動此軌道</button>
+            <button class="action-btn btn-start" id="btn-A" onclick="handleMetroClick('A')">開始</button>
         </div>
 
         <!-- 節拍器 B -->
         <div class="metro-card" id="card-B">
             <div class="metro-header">
-                <span>節拍器 ── 軌道 B</span>
+                <span>節拍器 2</span>
                 <span id="status-tag-B" style="font-size:0.8rem; opacity:0.8;">靜止</span>
             </div>
             <div class="control-row">
@@ -256,7 +256,7 @@
                     </select>
                 </div>
             </div>
-            <button class="action-btn btn-start" id="btn-B" onclick="handleMetroClick('B')">啟動此軌道</button>
+            <button class="action-btn btn-start" id="btn-B" onclick="handleMetroClick('B')">開始</button>
         </div>
 
     </div>
@@ -320,16 +320,16 @@
         
         document.getElementById('card-A').classList.remove('active');
         document.getElementById('status-tag-A').textContent = "靜止";
-        document.getElementById('btn-A').textContent = "啟動此軌道";
+        document.getElementById('btn-A').textContent = "開始";
         document.getElementById('btn-A').className = "action-btn btn-start";
 
         document.getElementById('card-B').classList.remove('active');
         document.getElementById('status-tag-B').textContent = "靜止";
-        document.getElementById('btn-B').textContent = "啟動此軌道";
+        document.getElementById('btn-B').textContent = "開始";
         document.getElementById('btn-B').className = "action-btn btn-start";
 
         displayPanel.style.backgroundColor = "#2c3e50";
-        lblBar.textContent = "STANDBY";
+        lblBar.textContent = "準備";
         lblTracker.innerHTML = "------";
         
         currentActiveTrack = null;
