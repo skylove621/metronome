@@ -215,7 +215,7 @@
     <div class="master-display" id="main-display-panel">
         <div class="info-box">
             <div class="info-label">當前小節 / 拍數</div>
-            <div class="info-value" id="lbl-bar">準備</div>
+            <div class="info-value" id="lbl-bar">--</div>
         </div>
         <div class="info-box">
             <div class="info-label">目前拍數軌跡 (Beat Tracker)</div>
@@ -368,7 +368,7 @@
         document.getElementById('btn-B').className = "action-btn btn-start";
 
         displayPanel.style.backgroundColor = "#2c3e50";
-        lblBar.textContent = "準備";
+        lblBar.textContent = "--";
         lblTracker.innerHTML = "------";
         
         currentActiveTrack = null;
