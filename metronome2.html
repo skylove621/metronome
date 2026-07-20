@@ -25,12 +25,14 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             box-sizing: border-box;
+            position: relative;
         }
-		/* 💡 新增：左上角網頁切換按鈕樣式 */
+
+        /* 💡 左上角網頁切換按鈕樣式 */
         .page-switch-btn {
             position: absolute;
-            top: 2px;
-            left: 2px;
+            top: 10px;
+            left: 10px;
             display: flex;
             align-items: center;
             gap: 4px;
@@ -56,7 +58,36 @@
             height: 14px;
             fill: currentColor;
         }
-        h1 { text-align: center; color: #2c3e50; margin: 5px 0 0 0; font-size: 1.4rem; }
+
+        /* 💡 右上角齒輪設定按鈕樣式 */
+        .settings-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .settings-btn:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+        .settings-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #475569;
+        }
+
+        h1 { text-align: center; color: #2c3e50; margin: 35px 0 15px 0; font-size: 1.4rem; }
 
         /* 頂部整合顯示面板 */
         .master-display {
@@ -69,10 +100,11 @@
             grid-template-columns: 1fr;
             gap: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
         }
         @media (min-width: 576px) {
             .master-display {
-                grid-template-columns: 1fr 3fr;
+                grid-template-columns: 1fr 2fr;
                 align-items: center;
             }
         }
@@ -85,14 +117,14 @@
             justify-content: center;
             min-height: 65px;
         }
-        .info-label { font-size: 0.8rem; color: #bdc3c7; margin-bottom: 2px; width: 250px;}
+        .info-label { font-size: 0.8rem; color: #bdc3c7; margin-bottom: 2px; }
         .info-value { font-size: 1.4rem; font-weight: bold; font-family: monospace; }
         .info-value.active-pulse { color: #2ecc71; }
 
         /* 節拍軌跡視覺化 */
         .tracker-output {
             font-family: "Courier New", Courier, monospace;
-            font-size: 8vw;
+            font-size: 7vw;
             color: #7f8c8d;
             letter-spacing: 2px;
             white-space: nowrap;
@@ -150,10 +182,10 @@
         }
         .metro-card.active .metro-header { color: #155724; }
 
-        /* 💡 核心優化：將三個控制項精準合併為單一行網格 */
+        /* 控制項精準合併為單一行網格 */
         .control-row {
             display: grid;
-            grid-template-columns: 2fr 2fr 3fr; /* 依序給予 幾拍、BPM、細分節拍 合適的寬度比例 */
+            grid-template-columns: 2fr 2fr 3fr;
             gap: 8px;
             width: 100%;
         }
@@ -196,18 +228,139 @@
         .metro-card.active .action-btn { background: #e74c3c; }
         .action-btn.btn-start { background: #2ecc71; }
         .action-btn.btn-start:hover { background: #27ae60; }
+
+        /* 💡 彈出視窗 (Modal) 樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            line-height: 1;
+        }
+        
+        .modal-section {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .pitch-control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .pitch-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .pitch-group label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .pitch-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pitch-btn {
+            background: #34495e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 36px;
+            height: 36px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .pitch-btn:active {
+            background: #2c3e50;
+        }
+        .pitch-slider {
+            flex-grow: 1;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+            accent-color: #2ecc71;
+            cursor: pointer;
+        }
+        .pitch-val-display {
+            font-family: monospace;
+            font-weight: bold;
+            min-width: 65px;
+            text-align: right;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-	<!-- 💡 左上角切換圖案按鈕 -->
+    <!-- 💡 左上角切換圖案按鈕 -->
     <a href="https://skylove621.github.io/metronome/metronome.html" class="page-switch-btn" title="切換至多段式視覺節拍器">
         <svg viewBox="0 0 24 24">
             <path d="M19 15v-3H9v-2h10V7l5 4-5 4M5 22c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h7v2H5v16h7v2H5z"/>
         </svg>
         <span>多段式視覺節拍器</span>
     </a>
+
+    <!-- 💡 右上角齒輪設定按鈕 -->
+    <button class="settings-btn" id="open-settings-btn" title="設定">
+        <svg viewBox="0 0 24 24">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+        </svg>
+    </button>
 	
     <h1>雙視覺節拍器</h1>
 
@@ -301,11 +454,65 @@
     </div>
 </div>
 
+<!-- 💡 設定彈出視窗 (Modal) -->
+<div class="modal-overlay" id="settings-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⚙️ 偏好設定</h2>
+            <button class="close-btn" id="close-settings-btn">&times;</button>
+        </div>
+
+        <!-- 音高獨立調整 -->
+        <h3>節拍音高獨立調整</h3>
+        <div class="modal-section pitch-control-section">
+            <!-- 1. 第一拍重拍 -->
+            <div class="pitch-group">
+                <label>第一拍重拍</label>
+                <div class="pitch-row">
+                    <button class="pitch-btn" onclick="adjustPitch('first', -100)">-</button>
+                    <input type="range" class="pitch-slider" id="slider-first" min="200" max="8000" step="100" value="4500">
+                    <button class="pitch-btn" onclick="adjustPitch('first', 100)">+</button>
+                    <span class="pitch-val-display" id="txt-first">4500 Hz</span>
+                </div>
+            </div>
+
+            <!-- 2. 其他正拍 -->
+            <div class="pitch-group">
+                <label>其他正拍</label>
+                <div class="pitch-row">
+                    <button class="pitch-btn" onclick="adjustPitch('other', -100)">-</button>
+                    <input type="range" class="pitch-slider" id="slider-other" min="200" max="8000" step="100" value="4500">
+                    <button class="pitch-btn" onclick="adjustPitch('other', 100)">+</button>
+                    <span class="pitch-val-display" id="txt-other">4500 Hz</span>
+                </div>
+            </div>
+
+            <!-- 3. 細分弱拍 -->
+            <div class="pitch-group">
+                <label>細分弱拍</label>
+                <div class="pitch-row">
+                    <button class="pitch-btn" onclick="adjustPitch('sub', -100)">-</button>
+                    <input type="range" class="pitch-slider" id="slider-sub" min="200" max="8000" step="100" value="3000">
+                    <button class="pitch-btn" onclick="adjustPitch('sub', 100)">+</button>
+                    <span class="pitch-val-display" id="txt-sub">3000 Hz</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     let currentActiveTrack = null; 
     let audioCtx = null;
     let isPlaying = false;
     
+    // 音高可變數設定
+    let pitchConfig = {
+        first: 4500, // 第一拍重拍
+        other: 4500, // 其他正拍
+        sub: 3000    // 細分弱拍
+    };
+
     let currentBar = 1;
     let currentBeat = 0;
     let currentSubBeat = 0;
@@ -318,6 +525,43 @@
     const displayPanel = document.getElementById('main-display-panel');
     const lblBar = document.getElementById('lbl-bar');
     const lblTracker = document.getElementById('lbl-tracker');
+
+    // Modal DOM
+    const settingsModal = document.getElementById('settings-modal');
+    const openSettingsBtn = document.getElementById('open-settings-btn');
+    const closeSettingsBtn = document.getElementById('close-settings-btn');
+
+    // 初始化綁定 Modal 與 Slider 事件
+    openSettingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
+    closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) settingsModal.classList.remove('active');
+    });
+
+    bindSliderEvent('first');
+    bindSliderEvent('other');
+    bindSliderEvent('sub');
+
+    function bindSliderEvent(target) {
+        const slider = document.getElementById(`slider-${target}`);
+        const txt = document.getElementById(`txt-${target}`);
+        slider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            pitchConfig[target] = val;
+            txt.textContent = `${val} Hz`;
+        });
+    }
+
+    // 按鈕 +/- 100 Hz 微調函式
+    window.adjustPitch = function(target, delta) {
+        const slider = document.getElementById(`slider-${target}`);
+        const txt = document.getElementById(`txt-${target}`);
+        let newVal = pitchConfig[target] + delta;
+        newVal = Math.max(200, Math.min(8000, newVal));
+        pitchConfig[target] = newVal;
+        slider.value = newVal;
+        txt.textContent = `${newVal} Hz`;
+    };
 
     function handleMetroClick(clickedTrack) {
         if (!audioCtx) {
@@ -335,7 +579,6 @@
         currentActiveTrack = track;
         isPlaying = true;
 
-        // 小節永遠由 1 開始無限循環
         currentBar = 1;
         currentBeat = 0;
         currentSubBeat = 0;
@@ -422,7 +665,7 @@
             
             if (currentBeat >= currentSetting.beatsPerBar) {
                 currentBeat = 0;
-                currentBar++; // 無限小節向上推進
+                currentBar++;
             }
         }
     }
@@ -475,12 +718,13 @@
         lblBar.textContent = `第 ${bar} 小節 : 第 ${beat + 1} 拍`;
     }
 
+    // 💡 調整：聲音頻率讀取動態設定 pitchConfig
     function scheduleNote(bar, beat, subBeat, time, track) {
         if (subBeat === 0) {
-            if (beat === 0) playTone(time, 3500, 0.15); 
-            else playTone(time, 2500, 0.1);             
+            if (beat === 0) playTone(time, pitchConfig.first, 0.15); 
+            else playTone(time, pitchConfig.other, 0.1);             
         } else {
-            playTone(time, 1000, 0.05);                  
+            playTone(time, pitchConfig.sub, 0.05);                  
         }
 
         const delay = (time - audioCtx.currentTime) * 1000;
